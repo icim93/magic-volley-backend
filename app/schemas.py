@@ -228,6 +228,54 @@ class RegistrationOut(RegistrationCreate):
     notes: Optional[str] = None
     created_at: datetime
     updated_at: datetime
+    player_id: Optional[int] = None
+    guardian_id: Optional[int] = None
+
+
+class RegistrationApprove(BaseModel):
+    """Dati per approvare un'iscrizione: crea la giocatrice e collega/crea il genitore."""
+    team_id: int
+    jersey_number: Optional[int] = None
+    guardian_first_name: str
+    guardian_last_name: str
+    guardian_email: EmailStr
+
+
+class RegistrationApproveOut(BaseModel):
+    player: PlayerOut
+    guardian_email: str
+    email_sent: bool
+    activation_link: str  # utile come fallback se l'email non è configurata/fallita
+
+
+# ---------- Guardian (area riservata genitori) ----------
+
+class GuardianPlayerOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    first_name: str
+    last_name: str
+    jersey_number: Optional[int] = None
+    role: Optional[str] = None
+    team: TeamOut
+
+
+class GuardianMeOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    first_name: str
+    last_name: str
+    email: EmailStr
+    players: List[GuardianPlayerOut] = []
+
+
+class GuardianActivate(BaseModel):
+    token: str
+    password: str
+
+
+class GuardianLoginOut(Token):
+    pass
 
 
 # ---------- Sponsor ----------

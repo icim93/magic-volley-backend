@@ -11,7 +11,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import engine, Base
-from app.routers import auth, teams, players, staff, matches, news, registrations, sponsors
+from app.routers import auth, teams, players, staff, matches, news, registrations, sponsors, guardian_auth
 
 # Crea le tabelle nel DB se non esistono già.
 # Per modifiche allo schema in futuro conviene passare ad Alembic (già incluso nei requirements).
@@ -42,6 +42,7 @@ app.include_router(matches.router)
 app.include_router(news.router)
 app.include_router(registrations.router)
 app.include_router(sponsors.router)
+app.include_router(guardian_auth.router)
 
 
 @app.get("/api/health", tags=["Sistema"])

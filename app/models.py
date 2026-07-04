@@ -83,6 +83,16 @@ class Team(Base):
     )
 
 
+# Tabella molti-a-molti Guardian <-> Player (un genitore può avere più figli in società,
+# e in teoria una giocatrice può avere più di un genitore con accesso, es. madre e padre)
+guardian_player_association = Table(
+    "guardian_player",
+    Base.metadata,
+    Column("guardian_id", Integer, ForeignKey("guardians.id"), primary_key=True),
+    Column("player_id", Integer, ForeignKey("players.id"), primary_key=True),
+)
+
+
 class Player(Base):
     __tablename__ = "players"
 
@@ -97,6 +107,30 @@ class Player(Base):
     is_active = Column(Boolean, default=True)
 
     team = relationship("Team", back_populates="players")
+    guardians = relationship("Guardian", secondary=guardian_player_association, back_populates="players")
+
+
+class Guardian(Base):
+    """
+    Account di un genitore/tutore per l'area riservata del sito.
+    Creato SOLO dallo staff quando approva un'iscrizione (nessuna auto-registrazione pubblica).
+    L'account resta inattivo (is_active=False, senza password) finché il genitore non clicca
+    il link di attivazione ricevuto via email e imposta la propria password.
+    """
+    __tablename__ = "guardians"
+
+    id = Column(Integer, primary_key=True, index=True)
+    first_name = Column(String(100), nullable=False)
+    last_name = Column(String(100), nullable=False)
+    email = Column(String(255), unique=True, index=True, nullable=False)
+    hashed_password = Column(String(255), nullable=True)  # null finché non attiva l'account
+    is_active = Column(Boolean, default=False)
+    activation_token = Column(String(255), unique=True, nullable=True, index=True)
+    activation_token_expires = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    players = relationship("Player", secondary=guardian_player_association, back_populates="guardians")
+
 
 
 class Staff(Base):
@@ -168,6 +202,8 @@ class Registration(Base):
     notes = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    player_id = Column(Integer, ForeignKey("players.id"), nullable=True)
+    guardian_id = Column(Integer, ForeignKey("guardians.id"), nullable=True)
 
 
 class Sponsor(Base):

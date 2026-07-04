@@ -24,7 +24,9 @@ def get_current_user(
         headers={"WWW-Authenticate": "Bearer"},
     )
     payload = decode_access_token(token)
-    if payload is None:
+    if payload is None or payload.get("type") not in (None, "staff"):
+        # payload.get("type") is None copre i token creati prima dell'introduzione
+        # di questo claim: restano validi finché non scadono naturalmente.
         raise credentials_exception
 
     user_id = payload.get("sub")
@@ -44,3 +46,31 @@ def require_admin(current_user: models.User = Depends(get_current_user)) -> mode
             detail="Richiesti permessi di amministratore",
         )
     return current_user
+
+
+guardian_oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/guardian-auth/login", auto_error=False)
+
+
+def get_current_guardian(
+    token: str = Depends(guardian_oauth2_scheme),
+    db: Session = Depends(get_db),
+) -> models.Guardian:
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Accesso non valido, effettua di nuovo il login.",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    if not token:
+        raise credentials_exception
+    payload = decode_access_token(token)
+    if payload is None or payload.get("type") != "guardian":
+        raise credentials_exception
+
+    guardian_id = payload.get("sub")
+    if guardian_id is None:
+        raise credentials_exception
+
+    guardian = db.query(models.Guardian).filter(models.Guardian.id == int(guardian_id)).first()
+    if guardian is None or not guardian.is_active:
+        raise credentials_exception
+    return guardian

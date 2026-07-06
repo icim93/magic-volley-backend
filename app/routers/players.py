@@ -17,6 +17,19 @@ def list_players(team_id: Optional[int] = None, db: Session = Depends(get_db)):
     return query.all()
 
 
+@router.get("/{player_id}", response_model=schemas.PlayerDetailOut)
+def get_player(player_id: int, db: Session = Depends(get_db)):
+    """Scheda pubblica di una singola giocatrice, con la squadra di appartenenza."""
+    player = (
+        db.query(models.Player)
+        .filter(models.Player.id == player_id, models.Player.is_active == True)  # noqa: E712
+        .first()
+    )
+    if not player:
+        raise HTTPException(status_code=404, detail="Giocatrice non trovata")
+    return player
+
+
 @router.post("", response_model=schemas.PlayerOut, status_code=201)
 def create_player(
     player_in: schemas.PlayerCreate,

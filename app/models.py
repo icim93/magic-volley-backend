@@ -10,6 +10,7 @@ Entità principali:
 - News: articoli del blog/news
 - Registration: richieste di iscrizione/tesseramento
 - Sponsor: sponsor e partner con logo e link
+- GalleryPhoto: foto della fotogallery pubblica, organizzate per categoria
 """
 import enum
 from datetime import datetime
@@ -103,6 +104,8 @@ class Player(Base):
     jersey_number = Column(Integer, nullable=True)
     role = Column(String(50), nullable=True)  # es. "schiacciatrice", "palleggiatrice", "libero"
     birth_date = Column(Date, nullable=True)
+    height_cm = Column(Integer, nullable=True)
+    bio = Column(Text, nullable=True)  # breve presentazione mostrata nella scheda pubblica
     photo_url = Column(String(500), nullable=True)
     is_active = Column(Boolean, default=True)
 
@@ -204,6 +207,19 @@ class Registration(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     player_id = Column(Integer, ForeignKey("players.id"), nullable=True)
     guardian_id = Column(Integer, ForeignKey("guardians.id"), nullable=True)
+
+
+class GalleryPhoto(Base):
+    """Foto della fotogallery pubblica (partite, allenamenti, eventi...)."""
+    __tablename__ = "gallery_photos"
+
+    id = Column(Integer, primary_key=True, index=True)
+    image_url = Column(String(500), nullable=False)
+    caption = Column(String(255), nullable=True)
+    category = Column(String(100), nullable=True)  # es. "Partite", "Allenamenti", "Eventi"
+    display_order = Column(Integer, default=0)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
 
 
 class Sponsor(Base):

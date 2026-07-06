@@ -71,6 +71,8 @@ class PlayerBase(BaseModel):
     jersey_number: Optional[int] = None
     role: Optional[str] = None
     birth_date: Optional[date] = None
+    height_cm: Optional[int] = None
+    bio: Optional[str] = None
     photo_url: Optional[str] = None
     is_active: bool = True
 
@@ -86,6 +88,8 @@ class PlayerUpdate(BaseModel):
     jersey_number: Optional[int] = None
     role: Optional[str] = None
     birth_date: Optional[date] = None
+    height_cm: Optional[int] = None
+    bio: Optional[str] = None
     photo_url: Optional[str] = None
     is_active: Optional[bool] = None
 
@@ -93,6 +97,11 @@ class PlayerUpdate(BaseModel):
 class PlayerOut(PlayerBase):
     model_config = ConfigDict(from_attributes=True)
     id: int
+
+
+class PlayerDetailOut(PlayerOut):
+    """Scheda pubblica della giocatrice, con la squadra di appartenenza."""
+    team: TeamOut
 
 
 class TeamWithPlayersOut(TeamOut):
@@ -276,6 +285,34 @@ class GuardianActivate(BaseModel):
 
 class GuardianLoginOut(Token):
     pass
+
+
+# ---------- Gallery ----------
+
+class GalleryPhotoBase(BaseModel):
+    image_url: str
+    caption: Optional[str] = None
+    category: Optional[str] = None
+    display_order: int = 0
+    is_active: bool = True
+
+
+class GalleryPhotoCreate(GalleryPhotoBase):
+    pass
+
+
+class GalleryPhotoUpdate(BaseModel):
+    image_url: Optional[str] = None
+    caption: Optional[str] = None
+    category: Optional[str] = None
+    display_order: Optional[int] = None
+    is_active: Optional[bool] = None
+
+
+class GalleryPhotoOut(GalleryPhotoBase):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    created_at: datetime
 
 
 # ---------- Sponsor ----------

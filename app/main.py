@@ -12,7 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import inspect, text
 
 from app.database import engine, Base
-from app.routers import auth, teams, players, staff, matches, news, registrations, sponsors, guardian_auth, gallery
+from app.routers import auth, teams, players, staff, matches, news, registrations, sponsors, guardian_auth, gallery, sitemap
 
 # Crea le tabelle nel DB se non esistono già.
 # Per modifiche allo schema in futuro conviene passare ad Alembic (già incluso nei requirements).
@@ -59,6 +59,7 @@ app.include_router(registrations.router)
 app.include_router(sponsors.router)
 app.include_router(guardian_auth.router)
 app.include_router(gallery.router)
+app.include_router(sitemap.router)
 
 
 @app.get("/api/health", tags=["Sistema"])

@@ -28,6 +28,11 @@ class UserOut(UserBase):
     is_active: bool
 
 
+class UserChangePassword(BaseModel):
+    current_password: str
+    new_password: str
+
+
 class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"

@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app import models, schemas
 from app.core.security import verify_password, create_access_token, get_password_hash
-from app.core.deps import require_admin
+from app.core.deps import require_admin, get_current_user
 
 router = APIRouter(prefix="/api/auth", tags=["Autenticazione"])
 
@@ -50,5 +50,22 @@ def create_user(
 
 
 @router.get("/me", response_model=schemas.UserOut)
-def read_current_user(current_user: models.User = Depends(require_admin)):
+def read_current_user(current_user: models.User = Depends(get_current_user)):
     return current_user
+
+
+@router.post("/change-password")
+def change_password(
+    data: schemas.UserChangePassword,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Cambio password su richiesta dell'utente stesso (admin o staff), dalla sezione profilo."""
+    if not verify_password(data.current_password, current_user.hashed_password):
+        raise HTTPException(status_code=400, detail="La password attuale non è corretta.")
+    if len(data.new_password) < 8:
+        raise HTTPException(status_code=400, detail="La nuova password deve avere almeno 8 caratteri.")
+
+    current_user.hashed_password = get_password_hash(data.new_password)
+    db.commit()
+    return {"message": "Password aggiornata correttamente."}

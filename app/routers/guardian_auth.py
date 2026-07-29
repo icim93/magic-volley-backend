@@ -62,6 +62,23 @@ def read_current_guardian(
     return guardian
 
 
+@router.post("/change-password")
+def change_password(
+    data: schemas.GuardianChangePassword,
+    guardian: models.Guardian = Depends(get_current_guardian),
+    db: Session = Depends(get_db),
+):
+    """Cambio password su richiesta del genitore stesso, dalla sezione profilo."""
+    if not verify_password(data.current_password, guardian.hashed_password):
+        raise HTTPException(status_code=400, detail="La password attuale non è corretta.")
+    if len(data.new_password) < 8:
+        raise HTTPException(status_code=400, detail="La nuova password deve avere almeno 8 caratteri.")
+
+    guardian.hashed_password = get_password_hash(data.new_password)
+    db.commit()
+    return {"message": "Password aggiornata correttamente."}
+
+
 @router.get("/matches", response_model=List[schemas.MatchOut])
 def matches_for_my_children(
     guardian: models.Guardian = Depends(get_current_guardian),

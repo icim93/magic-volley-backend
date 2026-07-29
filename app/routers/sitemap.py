@@ -36,6 +36,11 @@ def sitemap(db: Session = Depends(get_db)):
     )
     entries += [_url_entry(f"/news/{slug}") for (slug,) in published_news]
 
+    active_teams = (
+        db.query(models.Team.id).filter(models.Team.is_active == True).all()  # noqa: E712
+    )
+    entries += [_url_entry(f"/squadre/{team_id}") for (team_id,) in active_teams]
+
     active_players = (
         db.query(models.Player.id).filter(models.Player.is_active == True).all()  # noqa: E712
     )

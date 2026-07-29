@@ -283,6 +283,11 @@ class GuardianActivate(BaseModel):
     password: str
 
 
+class GuardianChangePassword(BaseModel):
+    current_password: str
+    new_password: str
+
+
 class GuardianLoginOut(Token):
     pass
 

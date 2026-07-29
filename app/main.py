@@ -22,12 +22,19 @@ Base.metadata.create_all(bind=engine)
 def _ensure_new_columns():
     """create_all non aggiunge colonne a tabelle già esistenti: qui le aggiungiamo a mano."""
     inspector = inspect(engine)
-    existing = {c["name"] for c in inspector.get_columns("players")}
+
+    players_existing = {c["name"] for c in inspector.get_columns("players")}
+    registrations_existing = {c["name"] for c in inspector.get_columns("registrations")}
+
     with engine.begin() as conn:
-        if "height_cm" not in existing:
+        if "height_cm" not in players_existing:
             conn.execute(text("ALTER TABLE players ADD COLUMN height_cm INTEGER"))
-        if "bio" not in existing:
+        if "bio" not in players_existing:
             conn.execute(text("ALTER TABLE players ADD COLUMN bio TEXT"))
+        if "player_id" not in registrations_existing:
+            conn.execute(text("ALTER TABLE registrations ADD COLUMN player_id INTEGER REFERENCES players(id)"))
+        if "guardian_id" not in registrations_existing:
+            conn.execute(text("ALTER TABLE registrations ADD COLUMN guardian_id INTEGER REFERENCES guardians(id)"))
 
 
 _ensure_new_columns()

@@ -13,7 +13,7 @@ from app.models import UserRole, RegistrationStatus, MatchStatus
 # ---------- User / Auth ----------
 
 class UserBase(BaseModel):
-    email: EmailStr
+    email: str  # username di accesso staff/admin: non deve necessariamente essere un'email valida
     full_name: str
     role: UserRole = UserRole.staff
 

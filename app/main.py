@@ -39,6 +39,18 @@ def _ensure_new_columns():
 
 _ensure_new_columns()
 
+
+def _ensure_new_enum_values():
+    """Postgres ha un tipo enum nativo: aggiungere un valore richiede ALTER TYPE.
+    Non serve su SQLite (locale), dove l'enum non è un tipo a parte."""
+    if engine.dialect.name != "postgresql":
+        return
+    with engine.begin() as conn:
+        conn.execute(text("ALTER TYPE userrole ADD VALUE IF NOT EXISTS 'superadmin'"))
+
+
+_ensure_new_enum_values()
+
 app = FastAPI(
     title="Magic Volley Adelfia ASD API",
     description="Backend per il sito e il pannello gestionale della società Magic Volley Adelfia ASD",

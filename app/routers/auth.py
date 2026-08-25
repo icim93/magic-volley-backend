@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app import models, schemas
 from app.core.security import verify_password, create_access_token, get_password_hash
-from app.core.deps import require_admin, get_current_user
+from app.core.deps import require_admin, require_superadmin, get_current_user
 
 router = APIRouter(prefix="/api/auth", tags=["Autenticazione"])
 
@@ -32,7 +32,14 @@ def create_user(
     db: Session = Depends(get_db),
     current_admin: models.User = Depends(require_admin),
 ):
-    """Crea un nuovo utente staff/admin per il pannello. Solo un admin può farlo."""
+    """Crea un nuovo utente staff/admin per il pannello. Solo un admin può farlo,
+    ma solo un superadmin può creare altri account admin/superadmin."""
+    if user_in.role in (models.UserRole.admin, models.UserRole.superadmin) and current_admin.role != models.UserRole.superadmin:
+        raise HTTPException(
+            status_code=403,
+            detail="Solo un superadmin può creare account admin",
+        )
+
     existing = db.query(models.User).filter(models.User.email == user_in.email).first()
     if existing:
         raise HTTPException(status_code=400, detail="Email già registrata")

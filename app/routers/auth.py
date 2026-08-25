@@ -3,6 +3,8 @@ import os
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
+from typing import List
+
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -82,6 +84,60 @@ def bootstrap_superadmin(data: BootstrapSuperadminIn, db: Session = Depends(get_
     user.role = models.UserRole.superadmin
     db.commit()
     return {"message": f"{data.email} è ora superadmin."}
+
+
+@router.get("/users", response_model=List[schemas.UserOut])
+def list_users(
+    db: Session = Depends(get_db),
+    current_admin: models.User = Depends(require_admin),
+):
+    """Elenco utenti staff/admin del pannello, per la sezione Utenti (solo admin+)."""
+    return db.query(models.User).order_by(models.User.full_name).all()
+
+
+@router.patch("/users/{user_id}", response_model=schemas.UserOut)
+def update_user(
+    user_id: int,
+    user_in: schemas.UserUpdate,
+    db: Session = Depends(get_db),
+    current_admin: models.User = Depends(require_admin),
+):
+    """Modifica un utente esistente. Solo un superadmin può toccare account
+    admin/superadmin (creare, promuovere o modificare); un admin normale può
+    gestire solo gli account staff."""
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Utente non trovato")
+
+    involves_privileged_role = user.role in (models.UserRole.admin, models.UserRole.superadmin) or (
+        user_in.role is not None and user_in.role in (models.UserRole.admin, models.UserRole.superadmin)
+    )
+    if involves_privileged_role and current_admin.role != models.UserRole.superadmin:
+        raise HTTPException(status_code=403, detail="Solo un superadmin può modificare account admin")
+
+    if user.id == current_admin.id and (
+        user_in.is_active is False or (user_in.role is not None and user_in.role != current_admin.role)
+    ):
+        raise HTTPException(status_code=400, detail="Non puoi disattivare o cambiare il tuo stesso ruolo da qui")
+
+    if user_in.email is not None and user_in.email != user.email:
+        existing = db.query(models.User).filter(models.User.email == user_in.email).first()
+        if existing:
+            raise HTTPException(status_code=400, detail="Email già registrata")
+        user.email = user_in.email
+
+    if user_in.full_name is not None:
+        user.full_name = user_in.full_name
+    if user_in.role is not None:
+        user.role = user_in.role
+    if user_in.is_active is not None:
+        user.is_active = user_in.is_active
+    if user_in.password:
+        user.hashed_password = get_password_hash(user_in.password)
+
+    db.commit()
+    db.refresh(user)
+    return user
 
 
 @router.get("/me", response_model=schemas.UserOut)

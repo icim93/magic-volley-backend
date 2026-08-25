@@ -28,6 +28,14 @@ class UserOut(UserBase):
     is_active: bool
 
 
+class UserUpdate(BaseModel):
+    email: Optional[str] = None
+    full_name: Optional[str] = None
+    role: Optional[UserRole] = None
+    is_active: Optional[bool] = None
+    password: Optional[str] = None
+
+
 class UserChangePassword(BaseModel):
     current_password: str
     new_password: str

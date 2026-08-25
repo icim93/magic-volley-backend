@@ -1,5 +1,9 @@
+import hmac
+import os
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -54,6 +58,30 @@ def create_user(
     db.commit()
     db.refresh(user)
     return user
+
+
+class BootstrapSuperadminIn(BaseModel):
+    email: str
+    token: str
+
+
+@router.post("/bootstrap-superadmin", include_in_schema=False)
+def bootstrap_superadmin(data: BootstrapSuperadminIn, db: Session = Depends(get_db)):
+    """Promuove UN utente esistente a superadmin, protetto da BOOTSTRAP_TOKEN
+    (env var su Render). Pensato per il bootstrap iniziale su piani senza Shell:
+    imposta BOOTSTRAP_TOKEN, chiama questo endpoint una volta, poi rimuovi la env var.
+    Senza BOOTSTRAP_TOKEN impostata, l'endpoint è sempre disattivato."""
+    expected_token = os.getenv("BOOTSTRAP_TOKEN")
+    if not expected_token or not hmac.compare_digest(data.token, expected_token):
+        raise HTTPException(status_code=404)
+
+    user = db.query(models.User).filter(models.User.email == data.email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Utente non trovato")
+
+    user.role = models.UserRole.superadmin
+    db.commit()
+    return {"message": f"{data.email} è ora superadmin."}
 
 
 @router.get("/me", response_model=schemas.UserOut)

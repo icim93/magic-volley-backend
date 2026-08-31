@@ -23,7 +23,10 @@ def submit_registration(reg_in: schemas.RegistrationCreate, db: Session = Depend
     Endpoint PUBBLICO: chiunque dal sito può inviare una richiesta di iscrizione.
     Nessuna autenticazione richiesta qui - è il form pubblico di tesseramento.
     """
-    registration = models.Registration(**reg_in.model_dump())
+    data = reg_in.model_dump(exclude={"documents_accepted"})
+    registration = models.Registration(**data)
+    if reg_in.documents_accepted:
+        registration.documents_accepted_at = datetime.utcnow()
     db.add(registration)
     db.commit()
     db.refresh(registration)

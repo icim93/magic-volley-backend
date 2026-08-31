@@ -236,6 +236,7 @@ class RegistrationCreate(BaseModel):
     requested_team_category: Optional[str] = None
     medical_certificate_url: Optional[str] = None
     id_document_url: Optional[str] = None
+    documents_accepted: bool = False  # step 2 del form pubblico: non persistito così com'è, vedi documents_accepted_at
 
 
 class RegistrationUpdate(BaseModel):
@@ -252,6 +253,7 @@ class RegistrationOut(RegistrationCreate):
     updated_at: datetime
     player_id: Optional[int] = None
     guardian_id: Optional[int] = None
+    documents_accepted_at: Optional[datetime] = None
 
 
 class RegistrationApprove(BaseModel):

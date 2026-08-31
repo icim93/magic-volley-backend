@@ -208,6 +208,7 @@ class Registration(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     player_id = Column(Integer, ForeignKey("players.id"), nullable=True)
     guardian_id = Column(Integer, ForeignKey("guardians.id"), nullable=True)
+    documents_accepted_at = Column(DateTime, nullable=True)  # step 2 del form: Regolamento/Statuto/Privacy/Foto/Safe Guarding
 
 
 class GalleryPhoto(Base):

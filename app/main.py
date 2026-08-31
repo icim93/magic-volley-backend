@@ -38,6 +38,18 @@ def _ensure_new_columns():
             conn.execute(text("ALTER TABLE registrations ADD COLUMN guardian_id INTEGER REFERENCES guardians(id)"))
         if "documents_accepted_at" not in registrations_existing:
             conn.execute(text("ALTER TABLE registrations ADD COLUMN documents_accepted_at TIMESTAMP"))
+        if "birth_place" not in registrations_existing:
+            conn.execute(text("ALTER TABLE registrations ADD COLUMN birth_place VARCHAR(255)"))
+        if "address" not in registrations_existing:
+            conn.execute(text("ALTER TABLE registrations ADD COLUMN address VARCHAR(500)"))
+        if "fiscal_code" not in registrations_existing:
+            conn.execute(text("ALTER TABLE registrations ADD COLUMN fiscal_code VARCHAR(20)"))
+        if "parent_birth_place" not in registrations_existing:
+            conn.execute(text("ALTER TABLE registrations ADD COLUMN parent_birth_place VARCHAR(255)"))
+        if "parent_address" not in registrations_existing:
+            conn.execute(text("ALTER TABLE registrations ADD COLUMN parent_address VARCHAR(500)"))
+        if "parent_fiscal_code" not in registrations_existing:
+            conn.execute(text("ALTER TABLE registrations ADD COLUMN parent_fiscal_code VARCHAR(20)"))
         if "area" not in staff_existing:
             conn.execute(text("ALTER TABLE staff ADD COLUMN area VARCHAR(50) DEFAULT 'collaboratori'"))
 

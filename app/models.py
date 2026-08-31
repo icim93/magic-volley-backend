@@ -197,7 +197,13 @@ class Registration(Base):
     first_name = Column(String(100), nullable=False)
     last_name = Column(String(100), nullable=False)
     birth_date = Column(Date, nullable=False)
+    birth_place = Column(String(255), nullable=True)
+    address = Column(String(500), nullable=True)
+    fiscal_code = Column(String(20), nullable=True)
     parent_name = Column(String(255), nullable=True)  # se minorenne
+    parent_birth_place = Column(String(255), nullable=True)  # se minorenne
+    parent_address = Column(String(500), nullable=True)  # se minorenne
+    parent_fiscal_code = Column(String(20), nullable=True)  # se minorenne
     email = Column(String(255), nullable=False)
     phone = Column(String(50), nullable=False)
     requested_team_category = Column(String(100), nullable=True)  # es. "U16"

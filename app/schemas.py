@@ -232,7 +232,13 @@ class RegistrationCreate(BaseModel):
     first_name: str
     last_name: str
     birth_date: date
+    birth_place: Optional[str] = None
+    address: Optional[str] = None
+    fiscal_code: Optional[str] = None
     parent_name: Optional[str] = None
+    parent_birth_place: Optional[str] = None
+    parent_address: Optional[str] = None
+    parent_fiscal_code: Optional[str] = None
     email: EmailStr
     phone: str
     requested_team_category: Optional[str] = None

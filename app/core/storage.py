@@ -1,9 +1,9 @@
 """
-Upload immagini su Supabase Storage.
+Upload file (immagini e documenti) su Supabase Storage.
 
 Usa httpx per parlare direttamente con le API REST di Supabase Storage
 (niente SDK aggiuntivo). Richiede SUPABASE_URL e SUPABASE_SERVICE_KEY tra
-le variabili d'ambiente; senza queste, upload_image solleva UploadError
+le variabili d'ambiente; senza queste, upload_file solleva UploadError
 e il chiamante lo trasforma in un 400 con un messaggio comprensibile.
 """
 import os
@@ -16,29 +16,40 @@ SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY")
 SUPABASE_BUCKET = os.getenv("SUPABASE_BUCKET", "media")
 
 ALLOWED_CONTENT_TYPES = {
+    # immagini (foto giocatrici/staff/squadre, gallery, sponsor, news)
     "image/jpeg": "jpg",
     "image/png": "png",
     "image/webp": "webp",
     "image/gif": "gif",
+    # documenti (sezione Documenti del pannello: scout gara, materiale allenatori...)
+    "application/pdf": "pdf",
+    "application/msword": "doc",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "docx",
+    "application/vnd.ms-excel": "xls",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "xlsx",
+    "application/vnd.ms-powerpoint": "ppt",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation": "pptx",
+    "text/plain": "txt",
+    "application/zip": "zip",
 }
-MAX_UPLOAD_BYTES = 5 * 1024 * 1024
+MAX_UPLOAD_BYTES = 15 * 1024 * 1024
 
 
 class UploadError(Exception):
     pass
 
 
-def upload_image(content: bytes, content_type: str, folder: str = "uploads") -> str:
-    """Carica un'immagine su Supabase Storage e ritorna il suo URL pubblico."""
+def upload_file(content: bytes, content_type: str, folder: str = "uploads") -> str:
+    """Carica un file su Supabase Storage e ritorna il suo URL pubblico."""
     if not SUPABASE_URL or not SUPABASE_SERVICE_KEY:
-        raise UploadError("Caricamento immagini non configurato sul server (SUPABASE_URL/SUPABASE_SERVICE_KEY mancanti).")
+        raise UploadError("Caricamento file non configurato sul server (SUPABASE_URL/SUPABASE_SERVICE_KEY mancanti).")
 
     ext = ALLOWED_CONTENT_TYPES.get(content_type)
     if not ext:
-        raise UploadError("Formato immagine non supportato: usa JPEG, PNG, WEBP o GIF.")
+        raise UploadError("Formato file non supportato.")
 
     if len(content) > MAX_UPLOAD_BYTES:
-        raise UploadError("Immagine troppo grande: massimo 5MB.")
+        raise UploadError("File troppo grande: massimo 15MB.")
 
     safe_folder = "".join(c for c in folder if c.isalnum() or c in ("-", "_")) or "uploads"
     path = f"{safe_folder}/{uuid.uuid4().hex}.{ext}"

@@ -144,6 +144,7 @@ class Staff(Base):
     first_name = Column(String(100), nullable=False)
     last_name = Column(String(100), nullable=False)
     role = Column(String(100), nullable=False)  # es. "Allenatore", "Vice", "Dirigente"
+    area = Column(String(50), nullable=False, default="collaboratori")  # dirigenza | staff_tecnico | area_sanitaria | collaboratori — assegnata a mano dall'admin, non più indovinata dal ruolo
     bio = Column(Text, nullable=True)
     photo_url = Column(String(500), nullable=True)
     email = Column(String(255), nullable=True)
@@ -234,3 +235,19 @@ class Sponsor(Base):
     tier = Column(String(50), default="standard")  # es. "main", "gold", "standard"
     display_order = Column(Integer, default=0)
     is_active = Column(Boolean, default=True)
+
+
+class Document(Base):
+    """Documenti condivisi nel pannello (scout gara, materiale allenatori, ecc.),
+    non pubblici: visibili solo a chi accede al pannello gestionale."""
+    __tablename__ = "documents"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String(255), nullable=False)
+    category = Column(String(100), nullable=True)  # etichetta libera, es. "Scouting", "Materiale allenatori"
+    file_url = Column(String(500), nullable=False)
+    file_name = Column(String(255), nullable=True)  # nome file originale, mostrato nella lista
+    uploaded_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    uploaded_by = relationship("User")

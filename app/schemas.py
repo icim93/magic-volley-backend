@@ -127,6 +127,7 @@ class StaffBase(BaseModel):
     first_name: str
     last_name: str
     role: str
+    area: str = "collaboratori"  # dirigenza | staff_tecnico | area_sanitaria | collaboratori
     bio: Optional[str] = None
     photo_url: Optional[str] = None
     email: Optional[EmailStr] = None
@@ -141,6 +142,7 @@ class StaffUpdate(BaseModel):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     role: Optional[str] = None
+    area: Optional[str] = None
     bio: Optional[str] = None
     photo_url: Optional[str] = None
     email: Optional[EmailStr] = None
@@ -362,3 +364,23 @@ class SponsorUpdate(BaseModel):
 class SponsorOut(SponsorBase):
     model_config = ConfigDict(from_attributes=True)
     id: int
+
+
+# ---------- Document (pannello, non pubblico) ----------
+
+class DocumentBase(BaseModel):
+    title: str
+    category: Optional[str] = None
+    file_url: str
+    file_name: Optional[str] = None
+
+
+class DocumentCreate(DocumentBase):
+    pass
+
+
+class DocumentOut(DocumentBase):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    created_at: datetime
+    uploaded_by: Optional[UserOut] = None

@@ -1,0 +1,18 @@
+name: Keep backend awake
+
+# Il piano gratuito di Render addormenta il servizio dopo ~15 minuti senza
+# richieste, causando fino a 50+ secondi di attesa al primo visitatore.
+# Questo ping periodico tiene il backend sveglio. GitHub non garantisce il
+# minuto esatto per i cron scheduled, quindi 10 minuti è un margine di
+# sicurezza rispetto ai 15 di Render.
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping /api/health
+        run: curl -sf https://magic-volley-backend.onrender.com/api/health

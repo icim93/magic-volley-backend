@@ -72,5 +72,14 @@ def delete_player(
     player = db.query(models.Player).filter(models.Player.id == player_id).first()
     if not player:
         raise HTTPException(status_code=404, detail="Giocatrice non trovata")
+
+    # Una giocatrice creata approvando un'iscrizione è collegata a un genitore e/o
+    # alla richiesta di iscrizione originale: senza scollegarla prima, il database
+    # blocca la cancellazione per non lasciare riferimenti rotti.
+    player.guardians = []
+    db.query(models.Registration).filter(models.Registration.player_id == player_id).update(
+        {models.Registration.player_id: None}
+    )
+
     db.delete(player)
     db.commit()

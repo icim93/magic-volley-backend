@@ -295,6 +295,24 @@ class GuardianMeOut(BaseModel):
     players: List[GuardianPlayerOut] = []
 
 
+class GuardianAdminOut(BaseModel):
+    """Vista genitore per il pannello (sezione Genitori): include is_active,
+    a differenza di GuardianMeOut usata dal genitore stesso."""
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    first_name: str
+    last_name: str
+    email: EmailStr
+    is_active: bool
+    created_at: datetime
+    players: List[GuardianPlayerOut] = []
+
+
+class GuardianActivationLinkOut(BaseModel):
+    activation_link: str
+    email_sent: bool
+
+
 class GuardianActivate(BaseModel):
     token: str
     password: str

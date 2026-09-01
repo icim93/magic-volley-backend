@@ -27,6 +27,7 @@ def _ensure_new_columns():
     registrations_existing = {c["name"] for c in inspector.get_columns("registrations")}
     staff_existing = {c["name"] for c in inspector.get_columns("staff")}
     matches_existing = {c["name"] for c in inspector.get_columns("matches")}
+    guardians_existing = {c["name"] for c in inspector.get_columns("guardians")}
 
     with engine.begin() as conn:
         if "height_cm" not in players_existing:
@@ -63,6 +64,12 @@ def _ensure_new_columns():
             conn.execute(text("ALTER TABLE staff ADD COLUMN area VARCHAR(50) DEFAULT 'collaboratori'"))
         if "reminder_sent" not in matches_existing:
             conn.execute(text("ALTER TABLE matches ADD COLUMN reminder_sent BOOLEAN DEFAULT FALSE"))
+        if "notify_news" not in guardians_existing:
+            conn.execute(text("ALTER TABLE guardians ADD COLUMN notify_news BOOLEAN DEFAULT TRUE"))
+        if "notify_match_results" not in guardians_existing:
+            conn.execute(text("ALTER TABLE guardians ADD COLUMN notify_match_results BOOLEAN DEFAULT TRUE"))
+        if "notify_match_reminders" not in guardians_existing:
+            conn.execute(text("ALTER TABLE guardians ADD COLUMN notify_match_reminders BOOLEAN DEFAULT TRUE"))
 
 
 _ensure_new_columns()

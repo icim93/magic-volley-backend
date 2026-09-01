@@ -66,6 +66,21 @@ def unsubscribe(
     return {"message": "Notifiche disattivate."}
 
 
+@router.patch("/preferences", response_model=schemas.GuardianMeOut)
+def update_notification_preferences(
+    data: schemas.NotificationPreferencesUpdate,
+    guardian: models.Guardian = Depends(get_current_guardian),
+    db: Session = Depends(get_db),
+):
+    """Il genitore sceglie quali categorie di notifica ricevere. Un messaggio
+    diretto dello staff (send-message) non è influenzato da queste preferenze."""
+    for field, value in data.model_dump(exclude_unset=True).items():
+        setattr(guardian, field, value)
+    db.commit()
+    db.refresh(guardian)
+    return guardian
+
+
 @router.post("/send-match-reminders")
 def send_match_reminders(x_cron_secret: str = Header(default=None), db: Session = Depends(get_db)):
     """
@@ -112,6 +127,7 @@ def send_match_reminders(x_cron_secret: str = Header(default=None), db: Session 
                 title=f"Promemoria: {match.home_team_name} vs {match.away_team_name}",
                 body=body,
                 url="/area-riservata",
+                category="match_reminders",
             )
         match.reminder_sent = True
         sent_count += 1

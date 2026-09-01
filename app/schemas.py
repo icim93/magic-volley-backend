@@ -303,6 +303,9 @@ class GuardianMeOut(BaseModel):
     last_name: str
     email: EmailStr
     players: List[GuardianPlayerOut] = []
+    notify_news: bool = True
+    notify_match_results: bool = True
+    notify_match_reminders: bool = True
 
 
 class GuardianAdminOut(BaseModel):
@@ -348,6 +351,22 @@ class PushSubscriptionCreate(BaseModel):
     endpoint: str
     keys: PushSubscriptionKeys
     user_agent: Optional[str] = None
+
+
+class NotificationPreferencesUpdate(BaseModel):
+    notify_news: Optional[bool] = None
+    notify_match_results: Optional[bool] = None
+    notify_match_reminders: Optional[bool] = None
+
+
+class GuardianMessageCreate(BaseModel):
+    title: str
+    body: str
+
+
+class GuardianMessageOut(BaseModel):
+    sent_via: str  # "push" | "email"
+    delivered: bool
 
 
 # ---------- Gallery ----------

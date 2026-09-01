@@ -8,8 +8,9 @@ from sqlalchemy.orm import Session, joinedload
 
 from app.database import get_db
 from app import models, schemas
-from app.core.deps import require_admin
-from app.core.email import send_activation_email
+from app.core.deps import require_admin, get_current_user
+from app.core.email import send_activation_email, send_custom_message_email
+from app.core.push import send_direct_message
 
 router = APIRouter(prefix="/api/guardians", tags=["Genitori"])
 
@@ -57,3 +58,27 @@ def regenerate_activation_link(
     email_sent = send_activation_email(guardian.email, guardian.first_name, activation_link)
 
     return schemas.GuardianActivationLinkOut(activation_link=activation_link, email_sent=email_sent)
+
+
+@router.post("/{guardian_id}/send-message", response_model=schemas.GuardianMessageOut)
+def send_message(
+    guardian_id: int,
+    data: schemas.GuardianMessageCreate,
+    db: Session = Depends(get_db),
+    _: models.User = Depends(get_current_user),
+):
+    """
+    Messaggio libero dello staff a un genitore (es. "tua figlia risulta
+    assente oggi"): notifica push se ha almeno un dispositivo iscritto,
+    altrimenti email — mai entrambi, per non duplicare l'avviso.
+    """
+    guardian = db.query(models.Guardian).filter(models.Guardian.id == guardian_id).first()
+    if not guardian:
+        raise HTTPException(status_code=404, detail="Genitore non trovato")
+
+    push_attempted = send_direct_message(db, guardian.id, title=data.title, body=data.body)
+    if push_attempted:
+        return schemas.GuardianMessageOut(sent_via="push", delivered=True)
+
+    email_sent = send_custom_message_email(guardian.email, guardian.first_name, data.title, data.body)
+    return schemas.GuardianMessageOut(sent_via="email", delivered=email_sent)

@@ -32,6 +32,7 @@ def _notify_match_result(db: Session, match: models.Match) -> None:
         title=f"{match.home_team_name} vs {match.away_team_name}",
         body=body,
         url="/area-riservata",
+        category="match_results",
     )
 
 

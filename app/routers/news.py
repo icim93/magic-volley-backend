@@ -46,7 +46,7 @@ def create_news(
     db.commit()
     db.refresh(item)
     if item.published:
-        send_push_to_all_guardians(db, title="Nuova news", body=item.title, url=f"/news/{item.slug}")
+        send_push_to_all_guardians(db, title="Nuova news", body=item.title, url=f"/news/{item.slug}", category="news")
     return item
 
 
@@ -70,7 +70,7 @@ def update_news(
     db.commit()
     db.refresh(item)
     if newly_published:
-        send_push_to_all_guardians(db, title="Nuova news", body=item.title, url=f"/news/{item.slug}")
+        send_push_to_all_guardians(db, title="Nuova news", body=item.title, url=f"/news/{item.slug}", category="news")
     return item
 
 

@@ -23,10 +23,6 @@ def send_activation_email(to_email: str, first_name: str, activation_link: str) 
     In entrambi i casi non solleva eccezioni: l'invio email non deve mai
     bloccare il flusso di approvazione dell'iscrizione.
     """
-    if not RESEND_API_KEY:
-        print(f"[EMAIL NON INVIATA - Resend non configurato] Link di attivazione per {to_email}: {activation_link}")
-        return False
-
     subject = "Attiva il tuo account — Magic Volley Adelfia"
     html = f"""
     <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
@@ -42,6 +38,33 @@ def send_activation_email(to_email: str, first_name: str, activation_link: str) 
       </p>
     </div>
     """
+    return _send_email(to_email, subject, html, fallback_log=f"Link di attivazione per {to_email}: {activation_link}")
+
+
+def send_custom_message_email(to_email: str, first_name: str, title: str, body: str) -> bool:
+    """
+    Messaggio libero dello staff a un genitore (es. "tua figlia risulta
+    assente oggi"), usato come alternativa quando il genitore non ha le
+    notifiche push attive su nessun dispositivo. Stesso schema fail-soft
+    delle altre funzioni di questo modulo.
+    """
+    subject = f"{title} — Magic Volley Adelfia"
+    html = f"""
+    <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
+      <p>Ciao {first_name},</p>
+      <p>{body}</p>
+      <p style="font-size: 12px; color: #666; margin-top: 24px;">
+        Messaggio inviato dalla società Magic Volley Adelfia.
+      </p>
+    </div>
+    """
+    return _send_email(to_email, subject, html, fallback_log=f"Messaggio per {to_email}: {title} — {body}")
+
+
+def _send_email(to_email: str, subject: str, html: str, fallback_log: str) -> bool:
+    if not RESEND_API_KEY:
+        print(f"[EMAIL NON INVIATA - Resend non configurato] {fallback_log}")
+        return False
     try:
         response = httpx.post(
             "https://api.resend.com/emails",
@@ -51,5 +74,5 @@ def send_activation_email(to_email: str, first_name: str, activation_link: str) 
         )
         return response.status_code < 300
     except httpx.HTTPError:
-        print(f"[ERRORE INVIO EMAIL] Link di attivazione per {to_email}: {activation_link}")
+        print(f"[ERRORE INVIO EMAIL] {fallback_log}")
         return False

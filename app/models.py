@@ -133,6 +133,13 @@ class Guardian(Base):
     activation_token_expires = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
+    # Preferenze di categoria per le notifiche push, scelte dal genitore stesso
+    # (a livello di account, non di singolo dispositivo). Un messaggio diretto
+    # inviato dallo staff (es. "assente oggi") non passa da questi filtri.
+    notify_news = Column(Boolean, default=True)
+    notify_match_results = Column(Boolean, default=True)
+    notify_match_reminders = Column(Boolean, default=True)
+
     players = relationship("Player", secondary=guardian_player_association, back_populates="guardians")
     push_subscriptions = relationship("PushSubscription", back_populates="guardian", cascade="all, delete-orphan")
 

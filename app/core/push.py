@@ -21,6 +21,15 @@ VAPID_PUBLIC_KEY = os.getenv("VAPID_PUBLIC_KEY")
 VAPID_PRIVATE_KEY = os.getenv("VAPID_PRIVATE_KEY")
 VAPID_CLAIMS_SUBJECT = os.getenv("VAPID_CLAIMS_SUBJECT", "mailto:info@magicvolleyadelfia.it")
 
+# Categorie di notifica che il genitore può disattivare singolarmente
+# (vedi Guardian.notify_* in models.py). Un messaggio diretto dello staff
+# (send_direct_message) non passa da questo filtro apposta.
+_CATEGORY_COLUMNS = {
+    "news": "notify_news",
+    "match_results": "notify_match_results",
+    "match_reminders": "notify_match_reminders",
+}
+
 
 def _send_to_subscription(sub: "models.PushSubscription", title: str, body: str, url: str | None) -> str:
     """Ritorna 'sent', 'expired' (subscription da cancellare) o 'error' (transitorio, si riprova al prossimo invio). Non solleva mai."""
@@ -49,8 +58,18 @@ def _send_to_subscription(sub: "models.PushSubscription", title: str, body: str,
         return "error"
 
 
-def send_push_to_guardians(db: Session, guardian_ids: Iterable[int], title: str, body: str, url: str | None = None) -> None:
-    """Manda una notifica a tutte le subscription dei genitori indicati (dedup automatico)."""
+def _apply_category_filter(query, category: str | None):
+    if not category:
+        return query
+    column_name = _CATEGORY_COLUMNS[category]
+    return query.join(models.Guardian).filter(getattr(models.Guardian, column_name).is_(True))
+
+
+def send_push_to_guardians(
+    db: Session, guardian_ids: Iterable[int], title: str, body: str, url: str | None = None, category: str | None = None
+) -> None:
+    """Manda una notifica a tutte le subscription dei genitori indicati (dedup automatico).
+    Se "category" è indicata, rispetta la preferenza del genitore per quella categoria."""
     if not VAPID_PRIVATE_KEY:
         print(f"[PUSH NON INVIATA - VAPID non configurato] {title}: {body}")
         return
@@ -59,18 +78,46 @@ def send_push_to_guardians(db: Session, guardian_ids: Iterable[int], title: str,
     if not guardian_ids:
         return
 
-    subs = db.query(models.PushSubscription).filter(models.PushSubscription.guardian_id.in_(guardian_ids)).all()
+    query = db.query(models.PushSubscription).filter(models.PushSubscription.guardian_id.in_(guardian_ids))
+    subs = _apply_category_filter(query, category).all()
     _send_and_prune(db, subs, title, body, url)
 
 
-def send_push_to_all_guardians(db: Session, title: str, body: str, url: str | None = None) -> None:
+def send_push_to_all_guardians(db: Session, title: str, body: str, url: str | None = None, category: str | None = None) -> None:
     """Manda una notifica a tutti i genitori/atlete che hanno almeno un dispositivo iscritto (es. news pubblicata)."""
     if not VAPID_PRIVATE_KEY:
         print(f"[PUSH NON INVIATA - VAPID non configurato] {title}: {body}")
         return
 
-    subs = db.query(models.PushSubscription).all()
+    query = db.query(models.PushSubscription)
+    subs = _apply_category_filter(query, category).all()
     _send_and_prune(db, subs, title, body, url)
+
+
+def has_active_push_subscription(db: Session, guardian_id: int) -> bool:
+    return (
+        db.query(models.PushSubscription.id)
+        .filter(models.PushSubscription.guardian_id == guardian_id)
+        .first()
+        is not None
+    )
+
+
+def send_direct_message(db: Session, guardian_id: int, title: str, body: str, url: str | None = None) -> bool:
+    """
+    Messaggio diretto dello staff a UN genitore (es. "assente oggi"): non passa
+    dalle preferenze di categoria, è sempre un contatto voluto esplicitamente.
+    Ritorna True se c'era almeno una subscription su cui tentare l'invio
+    (non garantisce la consegna effettiva — il chiamante decide se usare
+    l'email come alternativa in base a questo).
+    """
+    if not VAPID_PRIVATE_KEY:
+        return False
+    subs = db.query(models.PushSubscription).filter(models.PushSubscription.guardian_id == guardian_id).all()
+    if not subs:
+        return False
+    _send_and_prune(db, subs, title, body, url)
+    return True
 
 
 def _send_and_prune(db: Session, subs: list, title: str, body: str, url: str | None) -> None:

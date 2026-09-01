@@ -1,0 +1,21 @@
+name: Match reminders
+
+# Ogni ora chiama il backend per inviare le notifiche push di promemoria
+# alle partite in programma nelle prossime 23-25 ore. Nota: i workflow
+# schedulati di GitHub Actions si disattivano da soli dopo 60 giorni senza
+# commit sul repo — se il repo resta fermo a lungo, va riattivato a mano
+# dalla tab "Actions".
+on:
+  schedule:
+    - cron: "0 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  send-reminders:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Chiama /api/push/send-match-reminders
+        run: |
+          curl -sf -X POST \
+            -H "X-Cron-Secret: ${{ secrets.CRON_SECRET }}" \
+            https://magic-volley-backend.onrender.com/api/push/send-match-reminders

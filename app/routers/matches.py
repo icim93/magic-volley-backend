@@ -11,6 +11,30 @@ from app.core.push import send_push_to_guardians
 router = APIRouter(prefix="/api/matches", tags=["Partite"])
 
 
+def _notify_match_result(db: Session, match: models.Match) -> None:
+    """Notifica i genitori dei giocatori della squadra: usata sia quando una
+    partita viene creata già come 'giocata' (risultato inserito in un colpo
+    solo), sia quando passa da programmata a giocata con una modifica."""
+    player_ids_query = db.query(models.Player.id).filter(models.Player.team_id == match.home_team_id)
+    guardians = (
+        db.query(models.Guardian)
+        .join(models.guardian_player_association)
+        .filter(models.guardian_player_association.c.player_id.in_(player_ids_query))
+        .all()
+    )
+    guardian_ids = {g.id for g in guardians}
+    if not guardian_ids:
+        return
+    body = f"{match.home_sets} – {match.away_sets}" if match.home_sets is not None else "Risultato disponibile"
+    send_push_to_guardians(
+        db,
+        guardian_ids,
+        title=f"{match.home_team_name} vs {match.away_team_name}",
+        body=body,
+        url="/area-riservata",
+    )
+
+
 @router.get("", response_model=List[schemas.MatchOut])
 def list_matches(
     team_id: Optional[int] = None,
@@ -48,6 +72,8 @@ def create_match(
     db.add(match)
     db.commit()
     db.refresh(match)
+    if match.status == models.MatchStatus.played:
+        _notify_match_result(db, match)
     return match
 
 
@@ -73,23 +99,7 @@ def update_match(
     # Notifica solo sulla transizione scheduled -> played: update_match è generico
     # e viene usato anche per modifiche di orario/luogo, che non devono spammare.
     if was_scheduled and match.status == models.MatchStatus.played:
-        player_ids_query = db.query(models.Player.id).filter(models.Player.team_id == match.home_team_id)
-        guardians = (
-            db.query(models.Guardian)
-            .join(models.guardian_player_association)
-            .filter(models.guardian_player_association.c.player_id.in_(player_ids_query))
-            .all()
-        )
-        guardian_ids = {g.id for g in guardians}
-        if guardian_ids:
-            body = f"{match.home_sets} – {match.away_sets}" if match.home_sets is not None else "Risultato disponibile"
-            send_push_to_guardians(
-                db,
-                guardian_ids,
-                title=f"{match.home_team_name} vs {match.away_team_name}",
-                body=body,
-                url="/area-riservata",
-            )
+        _notify_match_result(db, match)
 
     return match
 

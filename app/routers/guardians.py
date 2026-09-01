@@ -38,14 +38,16 @@ def regenerate_activation_link(
     db: Session = Depends(get_db),
     _: models.User = Depends(require_admin),
 ):
-    """Rigenera il link di attivazione per un genitore non ancora attivo — utile
-    se il link mostrato al momento dell'approvazione è andato perso, o se
-    l'email non è mai arrivata."""
+    """
+    Rigenera il link di attivazione per un genitore — utile sia se il link
+    mostrato al momento dell'approvazione è andato perso o l'email non è mai
+    arrivata (account non ancora attivo), sia come reset password per un
+    account già attivo che ha dimenticato le credenziali: /attiva-account
+    imposta comunque una password nuova indipendentemente dallo stato attuale.
+    """
     guardian = db.query(models.Guardian).filter(models.Guardian.id == guardian_id).first()
     if not guardian:
         raise HTTPException(status_code=404, detail="Genitore non trovato")
-    if guardian.is_active:
-        raise HTTPException(status_code=400, detail="Questo account è già attivo, non serve un nuovo link")
 
     guardian.activation_token = secrets.token_urlsafe(32)
     guardian.activation_token_expires = datetime.utcnow() + timedelta(days=7)

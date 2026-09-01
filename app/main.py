@@ -12,7 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import inspect, text
 
 from app.database import engine, Base
-from app.routers import auth, teams, players, staff, matches, news, registrations, sponsors, guardian_auth, gallery, sitemap, uploads, documents, guardians
+from app.routers import auth, teams, players, staff, matches, news, registrations, sponsors, guardian_auth, gallery, sitemap, uploads, documents, guardians, push
 
 # Crea le tabelle nel DB se non esistono già.
 # Per modifiche allo schema in futuro conviene passare ad Alembic (già incluso nei requirements).
@@ -26,6 +26,7 @@ def _ensure_new_columns():
     players_existing = {c["name"] for c in inspector.get_columns("players")}
     registrations_existing = {c["name"] for c in inspector.get_columns("registrations")}
     staff_existing = {c["name"] for c in inspector.get_columns("staff")}
+    matches_existing = {c["name"] for c in inspector.get_columns("matches")}
 
     with engine.begin() as conn:
         if "height_cm" not in players_existing:
@@ -60,6 +61,8 @@ def _ensure_new_columns():
             conn.execute(text("ALTER TABLE registrations ADD COLUMN parent_postal_code VARCHAR(10)"))
         if "area" not in staff_existing:
             conn.execute(text("ALTER TABLE staff ADD COLUMN area VARCHAR(50) DEFAULT 'collaboratori'"))
+        if "reminder_sent" not in matches_existing:
+            conn.execute(text("ALTER TABLE matches ADD COLUMN reminder_sent BOOLEAN DEFAULT FALSE"))
 
 
 _ensure_new_columns()
@@ -107,6 +110,7 @@ app.include_router(sitemap.router)
 app.include_router(uploads.router)
 app.include_router(documents.router)
 app.include_router(guardians.router)
+app.include_router(push.router)
 
 
 @app.get("/api/health", tags=["Sistema"])

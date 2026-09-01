@@ -134,7 +134,29 @@ class Guardian(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     players = relationship("Player", secondary=guardian_player_association, back_populates="guardians")
+    push_subscriptions = relationship("PushSubscription", back_populates="guardian", cascade="all, delete-orphan")
 
+
+class PushSubscription(Base):
+    """
+    Iscrizione alle notifiche push di un dispositivo di un genitore/atleta.
+    Un genitore può averne più di una (telefono + computer). "endpoint" è
+    l'URL del servizio push del browser (FCM, Mozilla...) ed è univoco per
+    dispositivo/browser: se il push service risponde 404/410 vuol dire che
+    l'utente ha disinstallato o revocato il permesso, e va cancellata.
+    """
+    __tablename__ = "push_subscriptions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    guardian_id = Column(Integer, ForeignKey("guardians.id"), nullable=False, index=True)
+    endpoint = Column(String(1000), unique=True, nullable=False)
+    p256dh_key = Column(String(255), nullable=False)
+    auth_key = Column(String(255), nullable=False)
+    user_agent = Column(String(500), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    last_used_at = Column(DateTime, nullable=True)
+
+    guardian = relationship("Guardian", back_populates="push_subscriptions")
 
 
 class Staff(Base):
@@ -168,6 +190,7 @@ class Match(Base):
     away_sets = Column(Integer, nullable=True)
     set_scores = Column(String(100), nullable=True)  # es. "25-20, 22-25, 25-18"
     notes = Column(Text, nullable=True)
+    reminder_sent = Column(Boolean, default=False)  # promemoria push già inviato, evita doppi invii dal cron orario
 
     home_team = relationship("Team", foreign_keys=[home_team_id], back_populates="home_matches")
 

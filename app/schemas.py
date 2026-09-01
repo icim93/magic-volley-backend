@@ -337,6 +337,19 @@ class GuardianLoginOut(Token):
     pass
 
 
+# ---------- Notifiche push ----------
+
+class PushSubscriptionKeys(BaseModel):
+    p256dh: str
+    auth: str
+
+
+class PushSubscriptionCreate(BaseModel):
+    endpoint: str
+    keys: PushSubscriptionKeys
+    user_agent: Optional[str] = None
+
+
 # ---------- Gallery ----------
 
 class GalleryPhotoBase(BaseModel):

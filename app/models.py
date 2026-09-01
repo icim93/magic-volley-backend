@@ -142,6 +142,10 @@ class Guardian(Base):
 
     players = relationship("Player", secondary=guardian_player_association, back_populates="guardians")
     push_subscriptions = relationship("PushSubscription", back_populates="guardian", cascade="all, delete-orphan")
+    notifications = relationship(
+        "Notification", back_populates="guardian", cascade="all, delete-orphan",
+        order_by="desc(Notification.created_at)",
+    )
 
 
 class PushSubscription(Base):
@@ -164,6 +168,26 @@ class PushSubscription(Base):
     last_used_at = Column(DateTime, nullable=True)
 
     guardian = relationship("Guardian", back_populates="push_subscriptions")
+
+
+class Notification(Base):
+    """
+    Cronologia delle notifiche mandate a un genitore: una notifica push del
+    sistema operativo sparisce non appena viene vista o toccata, quindi qui
+    ne teniamo traccia per il "report notifiche" nell'area riservata — a
+    prescindere da come sia stata recapitata (push o email di riserva).
+    """
+    __tablename__ = "notifications"
+
+    id = Column(Integer, primary_key=True, index=True)
+    guardian_id = Column(Integer, ForeignKey("guardians.id"), nullable=False, index=True)
+    title = Column(String(255), nullable=False)
+    body = Column(Text, nullable=False)
+    url = Column(String(500), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+    read_at = Column(DateTime, nullable=True)
+
+    guardian = relationship("Guardian", back_populates="notifications")
 
 
 class Staff(Base):

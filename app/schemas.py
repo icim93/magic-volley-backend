@@ -364,6 +364,16 @@ class GuardianMessageCreate(BaseModel):
     body: str
 
 
+class NotificationOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    title: str
+    body: str
+    url: Optional[str] = None
+    created_at: datetime
+    read_at: Optional[datetime] = None
+
+
 class GuardianMessageOut(BaseModel):
     sent_via: str  # "push" | "email"
     delivered: bool

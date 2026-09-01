@@ -100,3 +100,34 @@ def matches_for_my_children(
         .order_by(models.Match.match_date.desc())
         .all()
     )
+
+
+@router.get("/notifications", response_model=List[schemas.NotificationOut])
+def list_notifications(
+    guardian: models.Guardian = Depends(get_current_guardian),
+    db: Session = Depends(get_db),
+):
+    """Cronologia delle notifiche ricevute (push o email) — resta consultabile
+    anche dopo che la notifica del sistema operativo è sparita."""
+    return (
+        db.query(models.Notification)
+        .filter(models.Notification.guardian_id == guardian.id)
+        .order_by(models.Notification.created_at.desc())
+        .limit(100)
+        .all()
+    )
+
+
+@router.post("/notifications/mark-read")
+def mark_notifications_read(
+    guardian: models.Guardian = Depends(get_current_guardian),
+    db: Session = Depends(get_db),
+):
+    """Segna come lette tutte le notifiche non ancora viste — chiamato quando
+    il genitore apre la pagina del report notifiche."""
+    db.query(models.Notification).filter(
+        models.Notification.guardian_id == guardian.id,
+        models.Notification.read_at.is_(None),
+    ).update({"read_at": datetime.utcnow()})
+    db.commit()
+    return {"message": "Notifiche segnate come lette."}

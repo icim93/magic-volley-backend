@@ -234,10 +234,14 @@ class RegistrationCreate(BaseModel):
     birth_date: date
     birth_place: Optional[str] = None
     address: Optional[str] = None
+    city: Optional[str] = None
+    postal_code: Optional[str] = None
     fiscal_code: Optional[str] = None
     parent_name: Optional[str] = None
     parent_birth_place: Optional[str] = None
     parent_address: Optional[str] = None
+    parent_city: Optional[str] = None
+    parent_postal_code: Optional[str] = None
     parent_fiscal_code: Optional[str] = None
     email: EmailStr
     phone: str

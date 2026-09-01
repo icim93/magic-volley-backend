@@ -199,10 +199,14 @@ class Registration(Base):
     birth_date = Column(Date, nullable=False)
     birth_place = Column(String(255), nullable=True)
     address = Column(String(500), nullable=True)
+    city = Column(String(120), nullable=True)
+    postal_code = Column(String(10), nullable=True)
     fiscal_code = Column(String(20), nullable=True)
     parent_name = Column(String(255), nullable=True)  # se minorenne
     parent_birth_place = Column(String(255), nullable=True)  # se minorenne
     parent_address = Column(String(500), nullable=True)  # se minorenne
+    parent_city = Column(String(120), nullable=True)  # se minorenne
+    parent_postal_code = Column(String(10), nullable=True)  # se minorenne
     parent_fiscal_code = Column(String(20), nullable=True)  # se minorenne
     email = Column(String(255), nullable=False)
     phone = Column(String(50), nullable=False)

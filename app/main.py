@@ -50,6 +50,14 @@ def _ensure_new_columns():
             conn.execute(text("ALTER TABLE registrations ADD COLUMN parent_address VARCHAR(500)"))
         if "parent_fiscal_code" not in registrations_existing:
             conn.execute(text("ALTER TABLE registrations ADD COLUMN parent_fiscal_code VARCHAR(20)"))
+        if "city" not in registrations_existing:
+            conn.execute(text("ALTER TABLE registrations ADD COLUMN city VARCHAR(120)"))
+        if "postal_code" not in registrations_existing:
+            conn.execute(text("ALTER TABLE registrations ADD COLUMN postal_code VARCHAR(10)"))
+        if "parent_city" not in registrations_existing:
+            conn.execute(text("ALTER TABLE registrations ADD COLUMN parent_city VARCHAR(120)"))
+        if "parent_postal_code" not in registrations_existing:
+            conn.execute(text("ALTER TABLE registrations ADD COLUMN parent_postal_code VARCHAR(10)"))
         if "area" not in staff_existing:
             conn.execute(text("ALTER TABLE staff ADD COLUMN area VARCHAR(50) DEFAULT 'collaboratori'"))
 
@@ -69,8 +77,8 @@ def _ensure_new_enum_values():
 _ensure_new_enum_values()
 
 app = FastAPI(
-    title="Magic Volley Adelfia ASD API",
-    description="Backend per il sito e il pannello gestionale della società Magic Volley Adelfia ASD",
+    title="Magic Volley Adelfia Associazione Sportiva Dilettantistica API",
+    description="Backend per il sito e il pannello gestionale della società Magic Volley Adelfia Associazione Sportiva Dilettantistica",
     version="1.1.0",
 )
 

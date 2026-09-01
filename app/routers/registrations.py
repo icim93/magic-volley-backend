@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app import models, schemas
-from app.core.deps import get_current_user
+from app.core.deps import get_current_user, require_superadmin
 from app.core.security import get_password_hash
 from app.core.email import send_activation_email
 import os
@@ -63,6 +63,22 @@ def update_registration(
     db.commit()
     db.refresh(registration)
     return registration
+
+
+@router.delete("/{registration_id}", status_code=204)
+def delete_registration(
+    registration_id: int,
+    db: Session = Depends(get_db),
+    _: models.User = Depends(require_superadmin),
+):
+    """Elimina definitivamente una richiesta di iscrizione (es. richieste di prova).
+    Solo superadmin: è un'operazione distruttiva e non recuperabile. Non tocca
+    l'eventuale giocatrice/genitore già creati approvando la richiesta."""
+    registration = db.query(models.Registration).filter(models.Registration.id == registration_id).first()
+    if not registration:
+        raise HTTPException(status_code=404, detail="Iscrizione non trovata")
+    db.delete(registration)
+    db.commit()
 
 
 @router.post("/{registration_id}/approve-and-invite", response_model=schemas.RegistrationApproveOut)

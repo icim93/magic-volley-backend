@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app import models, schemas
 from app.core.deps import require_admin
+from app.core.push import send_push_to_guardians
 
 router = APIRouter(prefix="/api/matches", tags=["Partite"])
 
@@ -61,10 +62,35 @@ def update_match(
     match = db.query(models.Match).filter(models.Match.id == match_id).first()
     if not match:
         raise HTTPException(status_code=404, detail="Partita non trovata")
+
+    was_scheduled = match.status == models.MatchStatus.scheduled
+
     for field, value in match_in.model_dump(exclude_unset=True).items():
         setattr(match, field, value)
     db.commit()
     db.refresh(match)
+
+    # Notifica solo sulla transizione scheduled -> played: update_match è generico
+    # e viene usato anche per modifiche di orario/luogo, che non devono spammare.
+    if was_scheduled and match.status == models.MatchStatus.played:
+        player_ids_query = db.query(models.Player.id).filter(models.Player.team_id == match.home_team_id)
+        guardians = (
+            db.query(models.Guardian)
+            .join(models.guardian_player_association)
+            .filter(models.guardian_player_association.c.player_id.in_(player_ids_query))
+            .all()
+        )
+        guardian_ids = {g.id for g in guardians}
+        if guardian_ids:
+            body = f"{match.home_sets} – {match.away_sets}" if match.home_sets is not None else "Risultato disponibile"
+            send_push_to_guardians(
+                db,
+                guardian_ids,
+                title=f"{match.home_team_name} vs {match.away_team_name}",
+                body=body,
+                url="/area-riservata",
+            )
+
     return match
 
 

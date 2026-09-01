@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app import models, schemas
 from app.core.deps import require_admin, get_current_user
+from app.core.push import send_push_to_all_guardians
 
 router = APIRouter(prefix="/api/news", tags=["News"])
 
@@ -44,6 +45,8 @@ def create_news(
     db.add(item)
     db.commit()
     db.refresh(item)
+    if item.published:
+        send_push_to_all_guardians(db, title="Nuova news", body=item.title, url=f"/news/{item.slug}")
     return item
 
 
@@ -59,12 +62,15 @@ def update_news(
         raise HTTPException(status_code=404, detail="Articolo non trovato")
 
     data = news_in.model_dump(exclude_unset=True)
-    if data.get("published") and not item.published_at:
+    newly_published = data.get("published") and not item.published_at
+    if newly_published:
         item.published_at = datetime.utcnow()
     for field, value in data.items():
         setattr(item, field, value)
     db.commit()
     db.refresh(item)
+    if newly_published:
+        send_push_to_all_guardians(db, title="Nuova news", body=item.title, url=f"/news/{item.slug}")
     return item
 
 

@@ -45,6 +45,12 @@ class MatchStatus(str, enum.Enum):
     cancelled = "cancelled"
 
 
+class RevisionStatus(str, enum.Enum):
+    pending = "pending"
+    approved = "approved"
+    rejected = "rejected"
+
+
 # Tabella molti-a-molti Staff <-> Team (un allenatore può seguire più squadre)
 staff_team_association = Table(
     "staff_team",
@@ -241,6 +247,37 @@ class News(Base):
     author_id = Column(Integer, ForeignKey("users.id"), nullable=True)
 
     author = relationship("User")
+
+
+class NewsRevision(Base):
+    """
+    Proposta di un articolo nuovo o di modifica a uno esistente, in attesa di
+    approvazione da admin/superadmin. Contiene lo stato COMPLETO proposto
+    (non un diff): all'approvazione i campi vengono applicati così come sono.
+    La riga News collegata (se news_id è valorizzato) non viene mai toccata
+    finché la proposta non è approvata, così un articolo già pubblicato resta
+    visibile e invariato mentre una modifica è in coda.
+    """
+    __tablename__ = "news_revisions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    news_id = Column(Integer, ForeignKey("news.id"), nullable=True)  # null = proposta di articolo nuovo
+    title = Column(String(255), nullable=False)
+    slug = Column(String(255), nullable=False)
+    summary = Column(String(500), nullable=True)
+    content = Column(Text, nullable=False)
+    cover_image_url = Column(String(500), nullable=True)
+    published = Column(Boolean, default=False)
+    submitted_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    status = Column(Enum(RevisionStatus), default=RevisionStatus.pending, nullable=False)
+    reject_reason = Column(Text, nullable=True)
+    reviewed_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    reviewed_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    news = relationship("News")
+    submitted_by = relationship("User", foreign_keys=[submitted_by_id])
+    reviewed_by = relationship("User", foreign_keys=[reviewed_by_id])
 
 
 class Registration(Base):

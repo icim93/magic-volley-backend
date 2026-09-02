@@ -7,7 +7,7 @@ from datetime import datetime, date
 from typing import Optional, List
 from pydantic import BaseModel, EmailStr, ConfigDict
 
-from app.models import UserRole, RegistrationStatus, MatchStatus
+from app.models import UserRole, RegistrationStatus, MatchStatus, RevisionStatus
 
 
 # ---------- User / Auth ----------
@@ -224,6 +224,25 @@ class NewsOut(NewsBase):
     id: int
     published_at: Optional[datetime] = None
     created_at: datetime
+
+
+class NewsRevisionCreate(NewsBase):
+    news_id: Optional[int] = None  # None = proposta di articolo nuovo; valorizzato = proposta di modifica
+
+
+class NewsRevisionReject(BaseModel):
+    reason: Optional[str] = None
+
+
+class NewsRevisionOut(NewsBase):
+    id: int
+    news_id: Optional[int] = None
+    status: RevisionStatus
+    submitted_by_name: str
+    current: Optional[NewsOut] = None  # valori live dell'articolo, se news_id è impostato — per il confronto in fase di revisione
+    reject_reason: Optional[str] = None
+    created_at: datetime
+    reviewed_at: Optional[datetime] = None
 
 
 # ---------- Registration ----------

@@ -22,7 +22,7 @@ from app import models
 
 VAPID_PUBLIC_KEY = os.getenv("VAPID_PUBLIC_KEY")
 VAPID_PRIVATE_KEY = os.getenv("VAPID_PRIVATE_KEY")
-VAPID_CLAIMS_SUBJECT = os.getenv("VAPID_CLAIMS_SUBJECT", "mailto:info@magicvolleyadelfia.it")
+VAPID_CLAIMS_SUBJECT = os.getenv("VAPID_CLAIMS_SUBJECT", "mailto:magicvolleyadelfia@gmail.com")
 
 # Categorie di notifica che il genitore può disattivare singolarmente
 # (vedi Guardian.notify_* in models.py). Un messaggio diretto dello staff

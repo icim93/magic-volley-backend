@@ -1,0 +1,164 @@
+[
+  {
+    "match_number": 181,
+    "round": 1,
+    "match_date": "2026-10-31T18:00:00",
+    "home_team_name": "MAGIC VOLLEY ADELFIA A.S.D.",
+    "away_team_name": "EUREKA GAS&POWER RAINBOW SPORT",
+    "is_home": true,
+    "location": "Palazzetto dello Sport - ADELFIA - (BA)"
+  },
+  {
+    "match_number": 187,
+    "round": 2,
+    "match_date": "2026-11-08T11:00:00",
+    "home_team_name": "ACADEMY VOLLEY GIOIA",
+    "away_team_name": "MAGIC VOLLEY ADELFIA A.S.D.",
+    "is_home": false,
+    "location": "Palasport \"Pinuccio Capurso\" - GIOIA DEL COLLE - (BA)"
+  },
+  {
+    "match_number": 192,
+    "round": 3,
+    "match_date": "2026-11-14T18:00:00",
+    "home_team_name": "MAGIC VOLLEY ADELFIA A.S.D.",
+    "away_team_name": "TRIVIANUM ASD",
+    "is_home": true,
+    "location": "Palazzetto dello Sport - ADELFIA - (BA)"
+  },
+  {
+    "match_number": 198,
+    "round": 4,
+    "match_date": "2026-11-22T19:30:00",
+    "home_team_name": "NEW VOLLEY MACK & SCHUHLE",
+    "away_team_name": "MAGIC VOLLEY ADELFIA A.S.D.",
+    "is_home": false,
+    "location": "Palestra \"N. Vitarella\" - CASSANO DELLE MURGE - (BA)"
+  },
+  {
+    "match_number": 203,
+    "round": 5,
+    "match_date": "2026-11-28T18:00:00",
+    "home_team_name": "MAGIC VOLLEY ADELFIA A.S.D.",
+    "away_team_name": "KLIMAITALIA CASTELLANA GROTTE",
+    "is_home": true,
+    "location": "Palazzetto dello Sport - ADELFIA - (BA)"
+  },
+  {
+    "match_number": 209,
+    "round": 6,
+    "match_date": "2026-12-06T09:30:00",
+    "home_team_name": "GRUPPO VITALE ALTAMURA",
+    "away_team_name": "MAGIC VOLLEY ADELFIA A.S.D.",
+    "is_home": false,
+    "location": "Palasport \"Baldassarra\" - ALTAMURA - (BA)"
+  },
+  {
+    "match_number": 214,
+    "round": 7,
+    "match_date": "2026-12-12T18:00:00",
+    "home_team_name": "MAGIC VOLLEY ADELFIA A.S.D.",
+    "away_team_name": "OLIO PANTALEO VOLLEY FASANO",
+    "is_home": true,
+    "location": "Palazzetto dello Sport - ADELFIA - (BA)"
+  },
+  {
+    "match_number": 220,
+    "round": 8,
+    "match_date": "2026-12-20T19:30:00",
+    "home_team_name": "REAL VOLLEY CONVERSANO",
+    "away_team_name": "MAGIC VOLLEY ADELFIA A.S.D.",
+    "is_home": false,
+    "location": "Palasport \"San Giacomo\" - CONVERSANO - (BA)"
+  },
+  {
+    "match_number": 225,
+    "round": 9,
+    "match_date": "2027-01-10T19:00:00",
+    "home_team_name": "ORSACUTI VOLLEY CAPURSO",
+    "away_team_name": "MAGIC VOLLEY ADELFIA A.S.D.",
+    "is_home": false,
+    "location": "PalaPadovano - CAPURSO - (BA)"
+  },
+  {
+    "match_number": 226,
+    "round": 10,
+    "match_date": "2027-01-17T10:00:00",
+    "home_team_name": "EUREKA GAS&POWER RAINBOW SPORT",
+    "away_team_name": "MAGIC VOLLEY ADELFIA A.S.D.",
+    "is_home": false,
+    "location": "Palazzetto dello Sport - VALENZANO - (BA)"
+  },
+  {
+    "match_number": 232,
+    "round": 11,
+    "match_date": "2027-01-23T18:00:00",
+    "home_team_name": "MAGIC VOLLEY ADELFIA A.S.D.",
+    "away_team_name": "ACADEMY VOLLEY GIOIA",
+    "is_home": true,
+    "location": "Palazzetto dello Sport - ADELFIA - (BA)"
+  },
+  {
+    "match_number": 237,
+    "round": 12,
+    "match_date": "2027-01-30T19:00:00",
+    "home_team_name": "TRIVIANUM ASD",
+    "away_team_name": "MAGIC VOLLEY ADELFIA A.S.D.",
+    "is_home": false,
+    "location": "Palazzetto dello Sport - TRIGGIANO - (BA)"
+  },
+  {
+    "match_number": 243,
+    "round": 13,
+    "match_date": "2027-02-06T18:00:00",
+    "home_team_name": "MAGIC VOLLEY ADELFIA A.S.D.",
+    "away_team_name": "NEW VOLLEY MACK & SCHUHLE",
+    "is_home": true,
+    "location": "Palazzetto dello Sport - ADELFIA - (BA)"
+  },
+  {
+    "match_number": 248,
+    "round": 14,
+    "match_date": "2027-02-14T20:00:00",
+    "home_team_name": "KLIMAITALIA CASTELLANA GROTTE",
+    "away_team_name": "MAGIC VOLLEY ADELFIA A.S.D.",
+    "is_home": false,
+    "location": "PalaGrotte - CASTELLANA GROTTE - (BA)"
+  },
+  {
+    "match_number": 254,
+    "round": 15,
+    "match_date": "2027-02-20T18:00:00",
+    "home_team_name": "MAGIC VOLLEY ADELFIA A.S.D.",
+    "away_team_name": "GRUPPO VITALE ALTAMURA",
+    "is_home": true,
+    "location": "Palazzetto dello Sport - ADELFIA - (BA)"
+  },
+  {
+    "match_number": 259,
+    "round": 16,
+    "match_date": "2027-02-27T19:00:00",
+    "home_team_name": "OLIO PANTALEO VOLLEY FASANO",
+    "away_team_name": "MAGIC VOLLEY ADELFIA A.S.D.",
+    "is_home": false,
+    "location": "Palestra I.I.S.S. \"Gaetano Salvemini\" - FASANO - (BR)"
+  },
+  {
+    "match_number": 265,
+    "round": 17,
+    "match_date": "2027-03-06T18:00:00",
+    "home_team_name": "MAGIC VOLLEY ADELFIA A.S.D.",
+    "away_team_name": "REAL VOLLEY CONVERSANO",
+    "is_home": true,
+    "location": "Palazzetto dello Sport - ADELFIA - (BA)"
+  },
+  {
+    "match_number": 270,
+    "round": 18,
+    "match_date": "2027-03-13T18:00:00",
+    "home_team_name": "MAGIC VOLLEY ADELFIA A.S.D.",
+    "away_team_name": "ORSACUTI VOLLEY CAPURSO",
+    "is_home": true,
+    "location": "Palazzetto dello Sport - ADELFIA - (BA)"
+  }
+]

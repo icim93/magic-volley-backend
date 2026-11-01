@@ -86,6 +86,14 @@ def _ensure_new_enum_values():
 
 _ensure_new_enum_values()
 
+# Carica le gare ufficiali della stagione una sola volta per il DB.
+# Le successive partenze sono idempotenti e non alterano risultati/modifiche.
+from app.database import SessionLocal
+from app.season_fixtures import seed_magic_volley_2026_27
+
+with SessionLocal() as seed_db:
+    seed_magic_volley_2026_27(seed_db)
+
 app = FastAPI(
     title="Magic Volley Adelfia Associazione Sportiva Dilettantistica API",
     description="Backend per il sito e il pannello gestionale della società Magic Volley Adelfia Associazione Sportiva Dilettantistica",

@@ -38,7 +38,7 @@ def _resolve_team(db: Session) -> models.Team:
         name = _normalize(team.name)
         first = ("primadivisione", "1adivisione", "1divisione")
         return any(value in category or value in name for value in first) and (
-            "femminile" in category or "femminile" in name
+            "maschile" not in category and "maschile" not in name
         )
 
     matches = [team for team in teams if is_first_division(team)]

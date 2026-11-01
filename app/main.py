@@ -90,9 +90,11 @@ _ensure_new_enum_values()
 # Le successive partenze sono idempotenti e non alterano risultati/modifiche.
 from app.database import SessionLocal
 from app.season_fixtures import seed_magic_volley_2026_27
+from app.cleanup_test_match import remove_test_vs_test_match
 
 with SessionLocal() as seed_db:
     seed_magic_volley_2026_27(seed_db)
+    remove_test_vs_test_match(seed_db)
 
 app = FastAPI(
     title="Magic Volley Adelfia Associazione Sportiva Dilettantistica API",

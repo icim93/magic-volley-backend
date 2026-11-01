@@ -71,17 +71,17 @@ def seed_magic_volley_2026_27(db: Session) -> dict:
     try:
         team = _resolve_team(db)
         existing = db.query(models.Match).filter(models.Match.home_team_id == team.id).all()
-        known_ids = set()
-        known_pairs = set()
+        known_ids = {}
+        known_pairs = {}
 
         for match in existing:
             for found in re.findall(r"Gara FIPAV n\.\s*(\d+)", match.notes or "", flags=re.I):
-                known_ids.add(int(found))
-            known_pairs.add((
+                known_ids[int(found)] = match
+            known_pairs[(
                 _normalize(match.home_team_name),
                 _normalize(match.away_team_name),
                 bool(match.is_home),
-            ))
+            )] = match
 
         created = 0
         for fixture in fixtures:
@@ -90,7 +90,21 @@ def seed_magic_volley_2026_27(db: Session) -> dict:
                 _normalize(fixture["away_team_name"]),
                 fixture["is_home"],
             )
-            if fixture["match_number"] in known_ids or pair in known_pairs:
+            existing_match = known_ids.get(fixture["match_number"]) or known_pairs.get(pair)
+            if existing_match is not None:
+                # Aggiorna SOLO la prima gara se e' ancora in programma:
+                # preserva correzioni e risultati inseriti dagli amministratori.
+                if (
+                    fixture["match_number"] == 181
+                    and fixture.get("status") == "played"
+                    and existing_match.status == models.MatchStatus.scheduled
+                    and existing_match.home_sets is None
+                    and existing_match.away_sets is None
+                ):
+                    existing_match.status = models.MatchStatus.played
+                    existing_match.home_sets = fixture["home_sets"]
+                    existing_match.away_sets = fixture["away_sets"]
+                    existing_match.set_scores = fixture["set_scores"]
                 continue
 
             db.add(models.Match(
@@ -102,11 +116,14 @@ def seed_magic_volley_2026_27(db: Session) -> dict:
                 # match_date e' un DateTime naive, come nelle altre gare.
                 match_date=datetime.fromisoformat(fixture["match_date"]),
                 location=fixture["location"],
-                status=models.MatchStatus.scheduled,
+                status=models.MatchStatus(fixture.get("status", "scheduled")),
+                home_sets=fixture.get("home_sets"),
+                away_sets=fixture.get("away_sets"),
+                set_scores=fixture.get("set_scores"),
                 notes=f"Prima Divisione Femminile {SEASON} · Giornata {fixture['round']} · Gara FIPAV n. {fixture['match_number']}",
             ))
-            known_ids.add(fixture["match_number"])
-            known_pairs.add(pair)
+            known_ids[fixture["match_number"]] = True
+            known_pairs[pair] = True
             created += 1
 
         db.commit()

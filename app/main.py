@@ -34,6 +34,8 @@ def _ensure_new_columns():
             conn.execute(text("ALTER TABLE players ADD COLUMN height_cm INTEGER"))
         if "bio" not in players_existing:
             conn.execute(text("ALTER TABLE players ADD COLUMN bio TEXT"))
+        if "merged_into_player_id" not in players_existing:
+            conn.execute(text("ALTER TABLE players ADD COLUMN merged_into_player_id INTEGER REFERENCES players(id)"))
         if "player_id" not in registrations_existing:
             conn.execute(text("ALTER TABLE registrations ADD COLUMN player_id INTEGER REFERENCES players(id)"))
         if "guardian_id" not in registrations_existing:

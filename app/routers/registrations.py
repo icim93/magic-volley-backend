@@ -102,6 +102,36 @@ def approve_and_invite(
     if not team:
         raise HTTPException(status_code=400, detail="Squadra indicata non esistente")
 
+    # Una richiesta gia' approvata non puo' generare nuove schede,
+    # anche se il pulsante viene premuto due volte.
+    if registration.player_id is not None:
+        raise HTTPException(
+            status_code=409,
+            detail="Questa iscrizione e' gia' collegata a una giocatrice: non e' stata creata una seconda scheda.",
+        )
+
+    # Se esiste gia' la stessa persona nella stessa squadra, non creare
+    # un record parallelo: l'admin puo' verificare e collegare i dati correttamente.
+    existing_player = (
+        db.query(models.Player)
+        .filter(
+            models.Player.team_id == team.id,
+            models.Player.birth_date == registration.birth_date,
+            models.Player.first_name.ilike(registration.first_name.strip()),
+            models.Player.last_name.ilike(registration.last_name.strip()),
+        )
+        .first()
+    )
+    if existing_player is not None:
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                "Giocatrice gia' presente in questa squadra (scheda ID "
+                f"{existing_player.id}). Verificare e collegare l'iscrizione "
+                "alla scheda esistente anziche' creare un duplicato."
+            ),
+        )
+
     # 1. Crea la giocatrice a partire dai dati della richiesta
     player = models.Player(
         team_id=team.id,

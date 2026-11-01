@@ -1,4 +1,4 @@
-"""Import idempotente del calendario Magic Volley Adelfia 2026/2027.
+"""Import idempotente della Prima Divisione Femminile 2026/2027.
 
 I 18 incontri vengono aggiunti al database all'avvio del backend. Le gare gia'
 presenti e gli eventuali risultati/cambi d'orario inseriti dal pannello admin
@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 
 SEASON = "2026/2027"
 TEAM_NAME = "MAGIC VOLLEY ADELFIA A.S.D."
+TEAM_CATEGORY = "Prima Divisione Femminile"
 DATA_PATH = Path(__file__).parent / "data" / "calendario_2026_2027.json"
 LOCK_KEY = 2026270181
 
@@ -29,31 +30,33 @@ def _normalize(value: str) -> str:
 
 
 def _resolve_team(db: Session) -> models.Team:
-    """Riutilizza una squadra della stagione, senza legare le gare a un'Under sbagliata."""
+    """Collega le gare solo alla Prima Divisione Femminile della stagione."""
     teams = db.query(models.Team).filter(models.Team.season == SEASON).all()
 
-    named = [
-        team for team in teams
-        if _normalize(team.name) in {_normalize(TEAM_NAME), _normalize("MAGIC VOLLEY ADELFIA")}
-    ]
-    if len(named) == 1:
-        return named[0]
-    if len(teams) == 1:
-        return teams[0]
+    def is_first_division(team: models.Team) -> bool:
+        category = _normalize(team.category)
+        name = _normalize(team.name)
+        first = ("primadivisione", "1adivisione", "1divisione")
+        return any(value in category or value in name for value in first) and (
+            "femminile" in category or "femminile" in name
+        )
 
-    # Non e' stata specificata la categoria del campionato. Non indoviniamo
-    # quale delle eventuali squadre giovanili usare: ne creiamo una dedicata.
+    matches = [team for team in teams if is_first_division(team)]
+    if len(matches) == 1:
+        return matches[0]
+    if len(matches) > 1:
+        raise ValueError("Piu' squadre Prima Divisione Femminile 2026/2027: import sospeso")
+
     team = models.Team(
-        name="Magic Volley Adelfia A.S.D.",
-        category="Campionato",
+        name="Magic Volley Adelfia - Prima Divisione Femminile",
+        category=TEAM_CATEGORY,
         season=SEASON,
-        description="Calendario gare stagione 2026/2027",
+        description="Campionato Prima Divisione Femminile 2026/2027",
         is_active=True,
     )
     db.add(team)
     db.flush()
     return team
-
 
 def seed_magic_volley_2026_27(db: Session) -> dict:
     """Importa le gare mancanti. Rilanciare la funzione non crea duplicati."""
@@ -100,7 +103,7 @@ def seed_magic_volley_2026_27(db: Session) -> dict:
                 match_date=datetime.fromisoformat(fixture["match_date"]),
                 location=fixture["location"],
                 status=models.MatchStatus.scheduled,
-                notes=f"Campionato {SEASON} · Giornata {fixture['round']} · Gara FIPAV n. {fixture['match_number']}",
+                notes=f"Prima Divisione Femminile {SEASON} · Giornata {fixture['round']} · Gara FIPAV n. {fixture['match_number']}",
             ))
             known_ids.add(fixture["match_number"])
             known_pairs.add(pair)

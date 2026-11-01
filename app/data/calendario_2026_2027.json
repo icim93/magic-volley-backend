@@ -6,7 +6,11 @@
     "home_team_name": "MAGIC VOLLEY ADELFIA A.S.D.",
     "away_team_name": "EUREKA GAS&POWER RAINBOW SPORT",
     "is_home": true,
-    "location": "Palazzetto dello Sport - ADELFIA - (BA)"
+    "location": "Palazzetto dello Sport - ADELFIA - (BA)",
+    "status": "played",
+    "home_sets": 1,
+    "away_sets": 3,
+    "set_scores": "26-24, 29-31, 20-25, 11-25"
   },
   {
     "match_number": 187,

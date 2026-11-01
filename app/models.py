@@ -115,6 +115,8 @@ class Player(Base):
     bio = Column(Text, nullable=True)  # breve presentazione mostrata nella scheda pubblica
     photo_url = Column(String(500), nullable=True)
     is_active = Column(Boolean, default=True)
+    # Una scheda accorpata resta nel DB come archivio e rinvia a quella principale.
+    merged_into_player_id = Column(Integer, ForeignKey("players.id"), nullable=True)
 
     team = relationship("Team", back_populates="players")
     guardians = relationship("Guardian", secondary=guardian_player_association, back_populates="players")

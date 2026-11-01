@@ -12,7 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import inspect, text
 
 from app.database import engine, Base
-from app.routers import auth, teams, players, staff, matches, news, registrations, sponsors, guardian_auth, gallery, sitemap, uploads, documents, guardians, push
+from app.routers import auth, teams, players, staff, matches, news, registrations, sponsors, guardian_auth, gallery, sitemap, uploads, documents, guardians, push, player_duplicates
 
 # Crea le tabelle nel DB se non esistono già.
 # Per modifiche allo schema in futuro conviene passare ad Alembic (già incluso nei requirements).
@@ -34,6 +34,8 @@ def _ensure_new_columns():
             conn.execute(text("ALTER TABLE players ADD COLUMN height_cm INTEGER"))
         if "bio" not in players_existing:
             conn.execute(text("ALTER TABLE players ADD COLUMN bio TEXT"))
+        if "merged_into_player_id" not in players_existing:
+            conn.execute(text("ALTER TABLE players ADD COLUMN merged_into_player_id INTEGER REFERENCES players(id)"))
         if "player_id" not in registrations_existing:
             conn.execute(text("ALTER TABLE registrations ADD COLUMN player_id INTEGER REFERENCES players(id)"))
         if "guardian_id" not in registrations_existing:
@@ -116,6 +118,7 @@ app.add_middleware(
 app.include_router(auth.router)
 app.include_router(teams.router)
 app.include_router(players.router)
+app.include_router(player_duplicates.router)
 app.include_router(staff.router)
 app.include_router(matches.router)
 app.include_router(news.router)

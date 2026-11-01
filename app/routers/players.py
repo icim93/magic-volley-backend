@@ -39,6 +39,24 @@ def create_player(
     team = db.query(models.Team).filter(models.Team.id == player_in.team_id).first()
     if not team:
         raise HTTPException(status_code=400, detail="Squadra indicata non esistente")
+    # Blocca un secondo inserimento della stessa atleta nella stessa squadra
+    # quando e' disponibile la data di nascita (non basta il nome da solo).
+    if player_in.birth_date is not None:
+        existing = (
+            db.query(models.Player)
+            .filter(
+                models.Player.team_id == player_in.team_id,
+                models.Player.birth_date == player_in.birth_date,
+                models.Player.first_name.ilike(player_in.first_name.strip()),
+                models.Player.last_name.ilike(player_in.last_name.strip()),
+            )
+            .first()
+        )
+        if existing:
+            raise HTTPException(
+                status_code=409,
+                detail=f"Giocatrice gia' presente (scheda ID {existing.id}): modifica quella esistente.",
+            )
     player = models.Player(**player_in.model_dump())
     db.add(player)
     db.commit()

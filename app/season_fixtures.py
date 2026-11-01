@@ -72,7 +72,7 @@ def seed_magic_volley_2026_27(db: Session) -> dict:
         known_pairs = set()
 
         for match in existing:
-            for found in re.findall(r"Gara FIPAV n\\.\\s*(\\d+)", match.notes or "", flags=re.I):
+            for found in re.findall(r"Gara FIPAV n\.\s*(\d+)", match.notes or "", flags=re.I):
                 known_ids.add(int(found))
             known_pairs.add((
                 _normalize(match.home_team_name),

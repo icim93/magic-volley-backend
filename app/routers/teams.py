@@ -1,6 +1,6 @@
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session, joinedload, with_loader_criteria
 
 from app.database import get_db
 from app import models, schemas
@@ -12,7 +12,10 @@ router = APIRouter(prefix="/api/teams", tags=["Squadre"])
 @router.get("", response_model=List[schemas.TeamWithPlayersOut])
 def list_teams(active_only: bool = True, db: Session = Depends(get_db)):
     """Elenco squadre, pubblico. Include roster giocatrici."""
-    query = db.query(models.Team).options(joinedload(models.Team.players))
+    query = db.query(models.Team).options(
+        joinedload(models.Team.players),
+        with_loader_criteria(models.Player, models.Player.is_active.is_(True)),
+    )
     if active_only:
         query = query.filter(models.Team.is_active == True)  # noqa: E712
     return query.all()
@@ -22,7 +25,10 @@ def list_teams(active_only: bool = True, db: Session = Depends(get_db)):
 def get_team(team_id: int, db: Session = Depends(get_db)):
     team = (
         db.query(models.Team)
-        .options(joinedload(models.Team.players))
+        .options(
+            joinedload(models.Team.players),
+            with_loader_criteria(models.Player, models.Player.is_active.is_(True)),
+        )
         .filter(models.Team.id == team_id)
         .first()
     )
